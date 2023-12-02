@@ -9,10 +9,6 @@ import (
 	"unicode"
 )
 
-// list of hashes
-// extract numbers from hashes
-// sum numbers
-
 func main() {
 	fmt.Println(getHashesFromFile())
 }
