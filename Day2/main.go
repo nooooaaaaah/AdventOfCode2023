@@ -32,27 +32,15 @@ func main() {
 	var games Games
 	importGamesFromFile(&games)
 
-	// testGame := testGame()
-	// fmt.Println(testGame)
-	// blue, red, green := totalMovesByColor(testGame.Rounds)
-	// fmt.Println(checkTotals(blue, red, green))
-	// fmt.Println(blue, red, green)
-	games.printGames()
-	var sumOfValidGameIDs int
+	var validGames int
 	for _, game := range games {
 		blue, red, green := totalMovesByColor(game.Rounds)
-		fmt.Printf("Game %d: blue: %d, red: %d, green: %d\n", game.ID, blue, red, green)
-		if validateGame(blue, red, green) {
-			sumOfValidGameIDs += game.ID
+		if blue && red && green {
+			validGames += game.ID
 		}
+		// games.printGames()
 	}
-	fmt.Println(sumOfValidGameIDs)
-
-	// blue, red, green := totalMovesByColor(games[0].Rounds)
-	// fmt.Println(checkTotals(blue, red, green))
-	// fmt.Println(blue, red, green)
-
-	// games.printGames()
+	fmt.Printf("Valid Games: %d \n", validGames)
 }
 
 func importGamesFromFile(games *Games) {
@@ -88,7 +76,7 @@ func processLine(line string, games *Games) {
 			if err != nil {
 				panic(err)
 			}
-			color := roundPart[2:]
+			color := strings.TrimSpace(roundPart[2:])
 			move := Move{Number: num, Color: color}
 			moves = append(moves, move)
 		}
@@ -104,44 +92,38 @@ func (g *Games) addGame(game Game) {
 	*g = append(*g, game)
 }
 
-func (g *Games) printGames() {
-	for _, game := range *g {
-		fmt.Println(game)
-	}
-}
-
 func openFile(filename string) (*os.File, error) {
 	return os.Open(filename)
 }
 
-// 12 red max
-// 13 green max
-// 14 blue max
-func validateGame(blueTotal int, redTotal int, greenTotal int) bool {
-	if blueTotal > 14 || redTotal > 12 || greenTotal > 13 {
-		return false
-	}
-	return true
-}
-
-func totalMovesByColor(rounds []Round) (int, int, int) {
-	var blueTotal int
-	var redTotal int
-	var greenTotal int
+// (blue, red, green)
+// returns true if all moves are under the max number of moves for that color
+func totalMovesByColor(rounds []Round) (bool, bool, bool) {
+	blueValid, redValid, greenValid := true, true, true
 	for _, round := range rounds {
+		// fmt.Printf("Round: %d \n", round.ID)
 		for _, move := range round.Moves {
 			switch move.Color {
 			case "blue":
-				blueTotal += move.Number
+				blueValid = blueValid && move.Number <= 14
+				fmt.Printf("blueValid: %t, Number: %v \n", blueValid, move.Number)
 			case "red":
-				redTotal += move.Number
+				redValid = redValid && move.Number <= 12
+				fmt.Printf("redValid: %t, Number: %v \n", redValid, move.Number)
 			case "green":
-				greenTotal += move.Number
+				greenValid = greenValid && move.Number <= 13
+				fmt.Printf("greenValid: %t, Number: %v \n", greenValid, move.Number)
 			}
 		}
 	}
-	return blueTotal, redTotal, greenTotal
+	return blueValid, redValid, greenValid
 }
+
+// func (g *Games) printGames() {
+// 	for _, game := range *g {
+// 		fmt.Println(game)
+// 	}
+// }
 
 // func testGame() Game {
 // 	var testGame Game
