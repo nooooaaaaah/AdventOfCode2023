@@ -33,14 +33,20 @@ func main() {
 	importGamesFromFile(&games)
 
 	var validGames int
+	var powerSetSum int
 	for _, game := range games {
-		blue, red, green := totalMovesByColor(game.Rounds)
+		blue, red, green := validateMovesByColor(game.Rounds)
+		blueMin, redMin, greenMin := minimumSetOfMoves(game.Rounds)
+		powerSetSum += powerSet(blueMin, redMin, greenMin)
+
 		if blue && red && green {
 			validGames += game.ID
 		}
 		// games.printGames()
 	}
+	fmt.Printf("Power Set: %d \n", powerSetSum)
 	fmt.Printf("Valid Games: %d \n", validGames)
+
 }
 
 func importGamesFromFile(games *Games) {
@@ -98,7 +104,7 @@ func openFile(filename string) (*os.File, error) {
 
 // (blue, red, green)
 // returns true if all moves are under the max number of moves for that color
-func totalMovesByColor(rounds []Round) (bool, bool, bool) {
+func validateMovesByColor(rounds []Round) (bool, bool, bool) {
 	blueValid, redValid, greenValid := true, true, true
 	for _, round := range rounds {
 		// fmt.Printf("Round: %d \n", round.ID)
@@ -117,6 +123,34 @@ func totalMovesByColor(rounds []Round) (bool, bool, bool) {
 		}
 	}
 	return blueValid, redValid, greenValid
+}
+
+func minimumSetOfMoves(rounds []Round) (int, int, int) {
+	blueMin, redMin, greenMin := 0, 0, 0
+	for _, round := range rounds {
+		for _, move := range round.Moves {
+			switch move.Color {
+			case "blue":
+				// save the larger of the two numbers
+				if move.Number > blueMin {
+					blueMin = move.Number
+				}
+			case "red":
+				if move.Number > redMin {
+					redMin = move.Number
+				}
+			case "green":
+				if move.Number > greenMin {
+					greenMin = move.Number
+				}
+			}
+		}
+	}
+	return blueMin, redMin, greenMin
+}
+
+func powerSet(blueMin int, redMin int, greenMin int) int {
+	return blueMin * redMin * greenMin
 }
 
 // func (g *Games) printGames() {
